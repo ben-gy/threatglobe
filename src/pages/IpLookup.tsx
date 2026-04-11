@@ -1,8 +1,7 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useJson } from '../hooks/useDataLoader';
 import type { LatestData, CountryProfile } from '../types';
 import { flag, countryName } from '../utils/countries';
-import { CATEGORY_LABELS, CATEGORY_TO_GROUP, GROUP_COLOURS, GROUP_LABELS } from '../utils/colours';
 
 interface HitRecord {
   ip: string;
@@ -19,7 +18,6 @@ export default function IpLookup() {
   const [hit, setHit] = useState<{ profile: CountryProfile; record: HitRecord } | null>(null);
   const [status, setStatus] = useState<'idle' | 'searching' | 'miss' | 'hit'>('idle');
 
-  // Load all country profiles on mount for lookup (lazy: only when user searches)
   const countriesToSearch = useMemo(() => {
     if (!latest) return [];
     return Array.from(new Set([
@@ -28,7 +26,6 @@ export default function IpLookup() {
     ]));
   }, [latest]);
 
-  // When user submits, progressively fetch country profiles and search for the IP.
   useEffect(() => {
     if (!searched) return;
     if (!/^(\d{1,3}\.){3}\d{1,3}$/.test(searched)) {
@@ -52,129 +49,81 @@ export default function IpLookup() {
             setStatus('hit');
             return;
           }
-        } catch {
-          // continue
-        }
+        } catch { /* continue */ }
       }
-      if (!cancelled) {
-        setStatus('miss');
-      }
+      if (!cancelled) setStatus('miss');
     })();
     return () => {
       cancelled = true;
     };
   }, [searched, countriesToSearch]);
 
-  const onSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setSearched(query.trim());
-  };
-
-  const sampleIps = useMemo(() => {
-    if (!latest) return [];
-    const set = new Set<string>();
-    return []; // Filled in via effect below
-  }, [latest]);
-
   return (
-    <div className="p-8 max-w-3xl mx-auto">
-      <header className="mb-6">
-        <h1 className="text-3xl font-semibold">IP Lookup</h1>
-        <p className="text-secondary text-sm mt-1">
-          Paste any IPv4 address and we'll check our cached dataset for recent abuse reports.
-          Only IPs present in the latest aggregation are searchable here — for a live lookup, use the external links.
-        </p>
-      </header>
+    <div>
+      <p className="text-secondary text-[11px] leading-relaxed mb-4">
+        Paste any IPv4 address and we'll check our cached dataset for recent abuse reports.
+        Only IPs present in the latest aggregation are searchable here — for a live lookup, use the external links.
+      </p>
 
-      <form onSubmit={onSubmit} className="flex gap-2">
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          setSearched(query.trim());
+        }}
+        className="flex gap-2"
+      >
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="e.g. 185.220.101.1"
-          className="flex-1 bg-card border border-border rounded-lg px-4 py-3 font-mono text-primary focus:outline-none focus:border-accent"
+          placeholder="185.220.101.1"
+          className="flex-1 bg-bg border border-border rounded px-3 py-2.5 font-mono text-primary text-[12px] focus:outline-none focus:border-accent placeholder:text-muted"
         />
         <button
           type="submit"
-          className="bg-accent text-primary px-5 py-3 rounded-lg font-medium hover:brightness-110 transition-all"
+          className="chip active px-4"
         >
-          Search
+          SEARCH
         </button>
       </form>
 
       {status === 'searching' && (
-        <div className="mt-6 text-secondary text-sm">Scanning cached dataset…</div>
+        <div className="mt-4 text-secondary text-[11px] uppercase tracking-wider font-mono">Scanning cached dataset…</div>
       )}
 
       {status === 'hit' && hit && (
-        <div className="mt-6 bg-card border border-border rounded-lg p-6">
-          <div className="text-xs uppercase tracking-wider text-success font-semibold">Match found</div>
-          <div className="font-mono text-2xl mt-1">{hit.record.ip}</div>
-          <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
-            <InfoRow label="Country" value={`${flag(hit.profile.country)} ${countryName(hit.profile.country)}`} />
-            <InfoRow label="Network / ASN" value={hit.record.asnOrg || '—'} />
-            <InfoRow label="Abuse confidence" value={`${hit.record.confidence}/100`} />
-            <InfoRow label="Reports in window" value={hit.record.count.toLocaleString()} />
+        <div className="mt-4 bg-bg/40 border border-success/40 rounded p-4">
+          <div className="label-uppercase text-success">Match found</div>
+          <div className="font-mono text-lg mt-1">{hit.record.ip}</div>
+          <div className="mt-3 grid grid-cols-2 gap-3">
+            <Field label="Country" value={`${flag(hit.profile.country)} ${countryName(hit.profile.country)}`} />
+            <Field label="Network / ASN" value={hit.record.asnOrg || '—'} />
+            <Field label="Abuse confidence" value={`${hit.record.confidence}/100`} />
+            <Field label="Reports in window" value={hit.record.count.toLocaleString()} />
             {hit.record.greynoise && (
-              <InfoRow label="GreyNoise classification" value={`${hit.record.greynoise.classification} ${hit.record.greynoise.name ? `(${hit.record.greynoise.name})` : ''}`} />
+              <Field label="GreyNoise" value={`${hit.record.greynoise.classification}${hit.record.greynoise.name ? ` (${hit.record.greynoise.name})` : ''}`} />
             )}
           </div>
-
-          <div className="mt-5 flex gap-2 flex-wrap">
-            <a
-              href={`https://www.abuseipdb.com/check/${hit.record.ip}`}
-              target="_blank"
-              rel="noreferrer"
-              className="text-xs px-3 py-1.5 rounded border border-border hover:border-accent transition-colors"
-            >
-              AbuseIPDB →
-            </a>
-            <a
-              href={`https://viz.greynoise.io/ip/${hit.record.ip}`}
-              target="_blank"
-              rel="noreferrer"
-              className="text-xs px-3 py-1.5 rounded border border-border hover:border-accent transition-colors"
-            >
-              GreyNoise →
-            </a>
-            <a
-              href={`https://isc.sans.edu/ipinfo/${hit.record.ip}`}
-              target="_blank"
-              rel="noreferrer"
-              className="text-xs px-3 py-1.5 rounded border border-border hover:border-accent transition-colors"
-            >
-              SANS ISC →
-            </a>
+          <div className="mt-4 flex gap-2 flex-wrap">
+            <Ext href={`https://www.abuseipdb.com/check/${hit.record.ip}`}>AbuseIPDB</Ext>
+            <Ext href={`https://viz.greynoise.io/ip/${hit.record.ip}`}>GreyNoise</Ext>
+            <Ext href={`https://isc.sans.edu/ipinfo/${hit.record.ip}`}>SANS ISC</Ext>
           </div>
         </div>
       )}
 
       {status === 'miss' && (
-        <div className="mt-6 bg-card border border-border rounded-lg p-6">
-          <div className="text-xs uppercase tracking-wider text-secondary font-semibold">Not in cache</div>
-          <div className="font-mono text-lg mt-1">{searched}</div>
-          <p className="text-secondary text-sm mt-3">
+        <div className="mt-4 bg-bg/40 border border-border rounded p-4">
+          <div className="label-uppercase">Not in cache</div>
+          <div className="font-mono text-base mt-1">{searched}</div>
+          <p className="text-secondary text-[11px] mt-2">
             {!/^(\d{1,3}\.){3}\d{1,3}$/.test(searched)
-              ? "That doesn't look like an IPv4 address. Try again."
-              : 'This IP is not in the current ThreatGlobe dataset. Check live feeds directly:'}
+              ? "That doesn't look like an IPv4 address."
+              : 'This IP is not in the current ThreatGlobe dataset. Check live feeds:'}
           </p>
           {/^(\d{1,3}\.){3}\d{1,3}$/.test(searched) && (
-            <div className="mt-4 flex gap-2 flex-wrap">
-              <a
-                href={`https://www.abuseipdb.com/check/${searched}`}
-                target="_blank"
-                rel="noreferrer"
-                className="text-xs px-3 py-1.5 rounded border border-border hover:border-accent transition-colors"
-              >
-                Look up on AbuseIPDB →
-              </a>
-              <a
-                href={`https://viz.greynoise.io/ip/${searched}`}
-                target="_blank"
-                rel="noreferrer"
-                className="text-xs px-3 py-1.5 rounded border border-border hover:border-accent transition-colors"
-              >
-                Check GreyNoise →
-              </a>
+            <div className="mt-3 flex gap-2 flex-wrap">
+              <Ext href={`https://www.abuseipdb.com/check/${searched}`}>AbuseIPDB</Ext>
+              <Ext href={`https://viz.greynoise.io/ip/${searched}`}>GreyNoise</Ext>
             </div>
           )}
         </div>
@@ -183,11 +132,19 @@ export default function IpLookup() {
   );
 }
 
-function InfoRow({ label, value }: { label: string; value: string }) {
+function Field({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <div className="text-[10px] uppercase tracking-wider text-secondary">{label}</div>
-      <div className="font-mono text-primary">{value}</div>
+      <div className="label-uppercase">{label}</div>
+      <div className="font-mono text-primary text-[12px] mt-0.5">{value}</div>
     </div>
+  );
+}
+
+function Ext({ href, children }: { href: string; children: string }) {
+  return (
+    <a href={href} target="_blank" rel="noreferrer" className="chip">
+      {children} →
+    </a>
   );
 }

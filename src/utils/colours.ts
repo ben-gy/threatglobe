@@ -1,11 +1,11 @@
 import type { CategoryGroup } from '../types';
 
 export const GROUP_COLOURS: Record<CategoryGroup, string> = {
-  brute: '#FF6B35',
-  ddos: '#E63946',
-  malware: '#9B5DE5',
-  scan: '#00B4D8',
-  web: '#06D6A0',
+  brute: '#f59e0b',  // amber (status-live)
+  ddos: '#ef4444',   // red
+  malware: '#a78bfa',// violet
+  scan: '#22d3ee',   // cyan
+  web: '#10b981',    // emerald
 };
 
 export const GROUP_LABELS: Record<CategoryGroup, string> = {

@@ -12,3 +12,4 @@ pipeline/geolite2
 # editor
 .vscode
 .idea
+.claude/

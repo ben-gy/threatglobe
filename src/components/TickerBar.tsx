@@ -3,44 +3,56 @@ import { flag, countryName } from '../utils/countries';
 
 interface Props {
   latest: LatestData | null;
+  newCount?: number;
 }
 
-export default function TickerBar({ latest }: Props) {
+export default function TickerBar({ latest, newCount = 0 }: Props) {
   if (!latest) {
     return (
-      <div className="absolute bottom-0 inset-x-0 z-20 bg-gradient-to-t from-bg/95 to-transparent pt-6 pb-3 px-4 pointer-events-none">
-        <div className="max-w-6xl mx-auto text-center text-secondary text-sm font-mono">Loading latest threat data…</div>
+      <div className="absolute bottom-0 inset-x-0 z-20 px-5 py-3 pointer-events-none">
+        <div className="text-center text-secondary text-[10px] font-mono tracking-[1.5px] uppercase">Loading…</div>
       </div>
     );
   }
 
   return (
-    <div className="absolute bottom-0 inset-x-0 z-20 bg-gradient-to-t from-bg/95 via-bg/60 to-transparent pt-8 pb-4 px-4 pointer-events-none">
-      <div className="max-w-6xl mx-auto flex flex-wrap items-center justify-center gap-x-6 gap-y-1 text-sm font-mono">
-        <span className="text-primary">
-          <b className="text-cat-brute">{latest.totalAttacks.toLocaleString()}</b>{' '}
-          <span className="text-secondary">attacks / last hour</span>
-        </span>
-        <span className="text-secondary">·</span>
-        <span>
-          <span className="text-secondary">Top source:</span>{' '}
-          <b className="text-primary">{flag(latest.topSource || '')} {countryName(latest.topSource || '')}</b>
-        </span>
-        <span className="text-secondary">·</span>
-        <span>
-          <span className="text-secondary">Top target:</span>{' '}
-          <b className="text-primary">{flag(latest.topTarget || '')} {countryName(latest.topTarget || '')}</b>
-        </span>
-        {latest.topPort ? (
-          <>
-            <span className="text-secondary">·</span>
-            <span>
-              <span className="text-secondary">Top port:</span>{' '}
-              <b className="text-cat-scan">{latest.topPort}</b>
-            </span>
-          </>
-        ) : null}
+    <div className="absolute bottom-0 inset-x-0 z-10 pointer-events-none">
+      <div className="bg-bg/85 backdrop-blur-md border-t border-border px-5 py-2.5">
+        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-1 text-[10px] font-mono tracking-[1px] uppercase">
+          <Item label="Active" value={`${latest.totalAttacks.toLocaleString()}`} highlight="text-cat-brute" />
+          <Sep />
+          <Item label="Top src" value={`${flag(latest.topSource || '')} ${countryName(latest.topSource || '')}`} />
+          <Sep />
+          <Item label="Top tgt" value={`${flag(latest.topTarget || '')} ${countryName(latest.topTarget || '')}`} />
+          {latest.topPort ? (
+            <>
+              <Sep />
+              <Item label="Top port" value={String(latest.topPort)} highlight="text-cyan" />
+            </>
+          ) : null}
+          {newCount > 0 ? (
+            <>
+              <Sep />
+              <span className="text-live">
+                <span className="font-bold">{newCount}</span> NEW
+              </span>
+            </>
+          ) : null}
+        </div>
       </div>
     </div>
   );
+}
+
+function Item({ label, value, highlight }: { label: string; value: string; highlight?: string }) {
+  return (
+    <span>
+      <span className="text-muted">{label}</span>{' '}
+      <span className={highlight || 'text-primary'}>{value}</span>
+    </span>
+  );
+}
+
+function Sep() {
+  return <span className="text-muted">·</span>;
 }

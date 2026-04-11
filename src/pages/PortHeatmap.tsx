@@ -20,20 +20,17 @@ export default function PortHeatmap() {
   );
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
-      <header className="mb-6">
-        <h1 className="text-3xl font-semibold">Port Heatmap</h1>
-        <p className="text-secondary text-sm mt-1 max-w-2xl">
-          The most-targeted network ports on the internet right now, aggregated from the SANS Internet Storm Center
-          distributed honeypot and firewall sensors. Click a port to see what service runs on it and why it's being scanned.
-        </p>
-      </header>
+    <div>
+      <p className="text-secondary text-xs leading-relaxed mb-4 max-w-2xl">
+        The most-targeted network ports across the public internet right now, aggregated from the SANS Internet Storm Center
+        distributed honeypot and firewall sensors. Click any port to see what service runs on it and why it's being scanned.
+      </p>
 
-      {!data && <div className="text-secondary">Loading port data…</div>}
+      {!data && <div className="text-secondary text-xs">Loading…</div>}
 
       {data && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-1.5">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div className="md:col-span-2 space-y-1 max-h-[60vh] overflow-y-auto scrollbar-thin pr-2">
             {data.ports.map((p) => {
               const info = portServices[String(p.port)];
               const intensity = Math.min(1, (p.records / maxRecords) ** 0.4);
@@ -42,32 +39,32 @@ export default function PortHeatmap() {
                 <button
                   key={p.port}
                   onClick={() => setSelected(p.port)}
-                  className={`w-full text-left px-4 py-3 rounded-lg border transition-all ${
-                    isSel ? 'border-accent bg-accent/10' : 'border-border bg-card hover:border-accent/60'
+                  className={`w-full text-left px-3 py-2 rounded border transition-all ${
+                    isSel ? 'border-accent bg-accent/10' : 'border-border bg-panel hover:border-accent/60'
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <div className="font-mono text-lg text-primary w-16 shrink-0">#{p.rank || '—'}</div>
+                    <div className="font-mono text-[10px] text-muted w-7 shrink-0">#{p.rank || '—'}</div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-baseline gap-2">
-                        <span className="font-mono text-xl font-semibold text-primary">{p.port}</span>
-                        <span className="text-sm text-secondary truncate">
-                          {info?.name || p.service || 'Unknown service'}
+                        <span className="font-mono text-base font-semibold text-primary">{p.port}</span>
+                        <span className="text-[11px] text-secondary truncate uppercase tracking-wider">
+                          {info?.name || p.service || 'Unknown'}
                         </span>
                       </div>
-                      <div className="mt-1.5 h-1.5 bg-bg rounded overflow-hidden">
+                      <div className="mt-1.5 bar-track">
                         <div
-                          className="h-full rounded"
+                          className="bar-fill"
                           style={{
                             width: `${intensity * 100}%`,
-                            background: `rgba(${Math.round(0 + intensity * 230)},${Math.round(180 - intensity * 80)},${Math.round(216 - intensity * 130)},0.9)`,
+                            background: `linear-gradient(90deg, #22d3ee ${(1 - intensity) * 50}%, #f59e0b 100%)`,
                           }}
                         />
                       </div>
                     </div>
                     <div className="text-right shrink-0 ml-3">
-                      <div className="font-mono text-sm text-primary">{p.records.toLocaleString()}</div>
-                      <div className="text-[10px] text-secondary">records</div>
+                      <div className="font-mono text-[11px] text-primary">{p.records.toLocaleString()}</div>
+                      <div className="text-[9px] text-muted uppercase tracking-wider">records</div>
                     </div>
                   </div>
                 </button>
@@ -75,41 +72,40 @@ export default function PortHeatmap() {
             })}
           </div>
 
-          <aside className="lg:sticky lg:top-20 lg:self-start bg-surface border border-border rounded-lg p-5 h-fit">
+          <aside className="bg-bg/40 border border-border rounded p-4 h-fit md:sticky md:top-0">
             {selectedPort ? (
               <div>
-                <div className="text-xs text-secondary uppercase tracking-wider">Port</div>
-                <div className="font-mono text-4xl font-semibold">{selectedPort.port}</div>
-                <div className="mt-1 text-lg text-primary">
+                <div className="label-uppercase">Port</div>
+                <div className="font-mono text-3xl font-semibold mt-1">{selectedPort.port}</div>
+                <div className="mt-1 text-[12px] text-primary uppercase tracking-wider">
                   {portServices[String(selectedPort.port)]?.name || selectedPort.service || 'Unknown service'}
                 </div>
-                <p className="text-sm text-secondary mt-3 leading-relaxed">
+                <p className="text-[11px] text-secondary mt-3 leading-relaxed">
                   {portServices[String(selectedPort.port)]?.description ||
-                    'No description available for this port. It may be an ephemeral port or a custom service.'}
+                    'No description available for this port. It may be ephemeral or a custom service.'}
                 </p>
-                <dl className="mt-4 text-xs space-y-1">
-                  <div className="flex justify-between">
-                    <dt className="text-secondary">Records</dt>
-                    <dd className="font-mono">{selectedPort.records.toLocaleString()}</dd>
-                  </div>
-                  <div className="flex justify-between">
-                    <dt className="text-secondary">Unique sources</dt>
-                    <dd className="font-mono">{selectedPort.sources.toLocaleString()}</dd>
-                  </div>
-                  <div className="flex justify-between">
-                    <dt className="text-secondary">Unique targets</dt>
-                    <dd className="font-mono">{selectedPort.targets.toLocaleString()}</dd>
-                  </div>
+                <div className="divider" />
+                <dl className="text-[10px] space-y-1.5 font-mono">
+                  <Row label="Records" value={selectedPort.records.toLocaleString()} />
+                  <Row label="Sources" value={selectedPort.sources.toLocaleString()} />
+                  <Row label="Targets" value={selectedPort.targets.toLocaleString()} />
                 </dl>
               </div>
             ) : (
-              <div className="text-secondary text-sm">
-                Click any port on the left for its service description and scanning stats.
-              </div>
+              <div className="text-secondary text-[11px]">Select any port for service details and stats.</div>
             )}
           </aside>
         </div>
       )}
+    </div>
+  );
+}
+
+function Row({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex justify-between">
+      <dt className="text-muted uppercase tracking-wider">{label}</dt>
+      <dd className="text-primary">{value}</dd>
     </div>
   );
 }

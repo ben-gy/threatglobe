@@ -1,0 +1,14 @@
+node_modules
+dist
+.DS_Store
+*.log
+.env
+.env.local
+
+# pipeline
+pipeline/node_modules
+pipeline/geolite2
+
+# editor
+.vscode
+.idea

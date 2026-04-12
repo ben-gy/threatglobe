@@ -335,7 +335,7 @@ async function main() {
     day: DAY,
     generatedAt: new Date().toISOString(),
     counts: {
-      blacklist: blacklist.length,
+      blacklist: abuseResult.fresh ? abuseResult.data.length : enrichedIps.length,
       geolocated: enrichedIps.length,
       otxPulses: otxPulses.length,
       dshieldTopIPs: dsTopIPs.length,

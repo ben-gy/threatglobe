@@ -20,11 +20,41 @@ const DAY = dayStamp(now);
 
 const status = readJson(path.join(META_DIR, 'last-updated.json'), {}) || {};
 
+// AbuseIPDB blacklist endpoint is limited to 5 requests/day on the free tier.
+// Pipeline runs hourly (24x/day), so we budget calls to every ~5 hours (UTC hours
+// 1, 6, 11, 16, 21) giving exactly 5 calls/day.  On non-fetch hours we reuse the
+// most recent raw file that contains IP data.
+const ABUSEIPDB_FETCH_HOURS = new Set([1, 6, 11, 16, 21]);
+
+function shouldFetchAbuseIPDB() {
+  const utcHour = now.getUTCHours();
+  return ABUSEIPDB_FETCH_HOURS.has(utcHour);
+}
+
+function loadCachedBlacklistIPs() {
+  // Walk raw files newest-first and return the IPs from the first one that has data.
+  const files = fs.readdirSync(RAW_DIR).filter((f) => f.endsWith('.json')).sort().reverse();
+  for (const f of files) {
+    const raw = readJson(path.join(RAW_DIR, f));
+    if (raw?.ips?.length > 0) {
+      log(`Reusing ${raw.ips.length} cached IPs from ${f}`);
+      return raw.ips;
+    }
+  }
+  return [];
+}
+
 async function fetchAbuseIPDBBlacklist() {
   if (!ABUSEIPDB_KEY) {
-    log('WARNING: ABUSEIPDB_API_KEY missing, using empty blacklist');
-    return [];
+    log('WARNING: ABUSEIPDB_API_KEY missing, using cached blacklist');
+    return { fresh: false, data: [] };
   }
+
+  if (!shouldFetchAbuseIPDB()) {
+    log(`Skipping AbuseIPDB (hour ${now.getUTCHours()} not in fetch schedule; reusing cache)`);
+    return { fresh: false, data: [] };
+  }
+
   try {
     log('Fetching AbuseIPDB blacklist...');
     // Free tier supports up to 10k with confidenceMinimum 75; webmaster/verified higher.
@@ -40,11 +70,11 @@ async function fetchAbuseIPDBBlacklist() {
       }
     );
     status.abuseipdb = { ok: true, at: new Date().toISOString(), count: data?.data?.length || 0 };
-    return data?.data || [];
+    return { fresh: true, data: data?.data || [] };
   } catch (e) {
     log('AbuseIPDB fetch failed:', e.message);
     status.abuseipdb = { ok: false, at: new Date().toISOString(), error: e.message };
-    return [];
+    return { fresh: false, data: [] };
   }
 }
 
@@ -249,7 +279,7 @@ async function main() {
   log(`Pipeline run for hour ${HOUR}`);
   const readers = await ensureDatabases();
 
-  const [blacklist, dsTopIPs, dsTopPorts, otxPulses] = await Promise.all([
+  const [abuseResult, dsTopIPs, dsTopPorts, otxPulses] = await Promise.all([
     fetchAbuseIPDBBlacklist(),
     fetchDShieldTopIPs(),
     fetchDShieldTopPorts(),
@@ -257,31 +287,38 @@ async function main() {
   ]);
   const dsSSH = []; // SSH feed endpoint is not currently returning JSON
 
-  // Geolocate every blacklisted IP.
-  const enrichedIps = [];
-  for (const entry of blacklist) {
-    const ip = entry.ipAddress;
-    if (!ip) continue;
-    const geo = lookup(readers, ip);
-    if (!geo || !geo.country) continue;
-    const target = sampleTargetCountry(geo.country, ip);
-    const category = sampleCategory(ip);
-    enrichedIps.push({
-      ip,
-      src: geo.country,
-      srcCity: geo.city,
-      srcLat: geo.lat,
-      srcLon: geo.lon,
-      asn: geo.asn,
-      asnOrg: geo.asnOrg,
-      tgt: target,
-      confidence: entry.abuseConfidenceScore || 0,
-      lastReportedAt: entry.lastReportedAt || null,
-      category,
-    });
-  }
+  let enrichedIps;
 
-  log(`Geolocated ${enrichedIps.length}/${blacklist.length} IPs`);
+  if (abuseResult.fresh && abuseResult.data.length > 0) {
+    // Fresh AbuseIPDB data — geolocate every blacklisted IP.
+    enrichedIps = [];
+    for (const entry of abuseResult.data) {
+      const ip = entry.ipAddress;
+      if (!ip) continue;
+      const geo = lookup(readers, ip);
+      if (!geo || !geo.country) continue;
+      const target = sampleTargetCountry(geo.country, ip);
+      const category = sampleCategory(ip);
+      enrichedIps.push({
+        ip,
+        src: geo.country,
+        srcCity: geo.city,
+        srcLat: geo.lat,
+        srcLon: geo.lon,
+        asn: geo.asn,
+        asnOrg: geo.asnOrg,
+        tgt: target,
+        confidence: entry.abuseConfidenceScore || 0,
+        lastReportedAt: entry.lastReportedAt || null,
+        category,
+      });
+    }
+    log(`Geolocated ${enrichedIps.length}/${abuseResult.data.length} fresh IPs`);
+  } else {
+    // No fresh data — reuse cached IPs from the most recent raw file.
+    enrichedIps = loadCachedBlacklistIPs();
+    log(`Using ${enrichedIps.length} cached IPs (no fresh AbuseIPDB data this hour)`);
+  }
 
   // Enrich top-reported IPs with GreyNoise. Community tier is 25/week so we sample tiny.
   const topForEnrichment = [...enrichedIps]

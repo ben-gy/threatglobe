@@ -38,7 +38,18 @@ function main() {
     log('No raw data yet; nothing to aggregate');
     return;
   }
-  const latestRaw = raw[raw.length - 1].data;
+  // Prefer the most recent raw file, but if it has 0 IPs fall back to the most
+  // recent file that actually contains data so the globe never goes empty.
+  let latestRaw = raw[raw.length - 1].data;
+  if (latestRaw.ips.length === 0) {
+    for (let i = raw.length - 2; i >= 0; i--) {
+      if (raw[i].data.ips.length > 0) {
+        log(`Latest raw (${latestRaw.hour}) is empty; falling back to ${raw[i].data.hour}`);
+        latestRaw = raw[i].data;
+        break;
+      }
+    }
+  }
   log(`Aggregating ${raw.length} raw hours, latest = ${latestRaw.hour}`);
 
   // ---------- latest.json ----------

@@ -1,0 +1,1 @@
+{"country":"JM","outboundTotal":1,"inboundTotal":0,"topOutboundTargets":[{"country":"SG","count":1}],"topInboundSources":[],"categoryCountsOut":{"15":1},"categoryCountsIn":{},"topAsn":[{"name":"Digicel Jamaica","count":1}],"topSourceIps":[{"ip":"63.143.99.121","count":1,"asnOrg":"Digicel Jamaica","confidence":100,"greynoise":null}],"hourly":{"2026-04-12-01":1}}

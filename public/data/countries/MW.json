@@ -1,0 +1,1 @@
+{"country":"MW","outboundTotal":1,"inboundTotal":0,"topOutboundTargets":[{"country":"DE","count":1}],"topInboundSources":[],"categoryCountsOut":{"22":1},"categoryCountsIn":{},"topAsn":[{"name":"SIMBANET-MALAWI","count":1}],"topSourceIps":[{"ip":"196.11.86.134","count":1,"asnOrg":"SIMBANET-MALAWI","confidence":100,"greynoise":null}],"hourly":{"2026-04-12-01":1}}

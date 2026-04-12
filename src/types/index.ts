@@ -87,6 +87,9 @@ export interface PipelineStatus {
   dshield_ssh?: { ok: boolean; at: string; error?: string };
   otx?: { ok: boolean; at: string; count?: number; error?: string };
   greynoise?: { ok: boolean; at: string; enriched?: number; failed?: number };
+  blocklist_de?: { ok: boolean; at: string; count?: number; error?: string };
+  feodo?: { ok: boolean; at: string; count?: number; error?: string };
+  ipsum?: { ok: boolean; at: string; count?: number; error?: string };
 }
 
 export interface OtxPulses {

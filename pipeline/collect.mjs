@@ -1,5 +1,6 @@
 // ThreatGlobe data collector.
-// Pulls from AbuseIPDB (primary), DShield, AlienVault OTX, GreyNoise (enrichment).
+// Pulls from AbuseIPDB (primary), Blocklist.de, Feodo Tracker, IPsum,
+// DShield, AlienVault OTX, GreyNoise (enrichment).
 // Geo-locates IPs via MaxMind GeoLite2 and writes per-hour raw JSON for the aggregator.
 
 import fs from 'node:fs';
@@ -168,6 +169,119 @@ async function fetchOTXRecentPulses() {
   }
 }
 
+// ---------- Supplementary free sources (no API key required) ----------
+
+const BLOCKLIST_DE_FEEDS = [
+  { feed: 'ssh', category: 22 },
+  { feed: 'apache', category: 21 },
+  { feed: 'mail', category: 11 },
+  { feed: 'ftp', category: 5 },
+  { feed: 'bruteforcelogin', category: 18 },
+  { feed: 'imap', category: 18 },
+];
+
+const IPV4_RE = /^\d{1,3}(\.\d{1,3}){3}$/;
+
+async function fetchBlocklistDe() {
+  try {
+    log('Fetching Blocklist.de feeds...');
+    const results = await Promise.allSettled(
+      BLOCKLIST_DE_FEEDS.map(async ({ feed, category }) => {
+        const txt = await fetchText(`https://lists.blocklist.de/lists/${feed}.txt`, {
+          headers: { 'User-Agent': 'threatglobe/0.1' },
+          timeoutMs: 30000,
+        });
+        const ips = [];
+        for (const line of txt.split('\n')) {
+          const trimmed = line.trim();
+          if (!trimmed || trimmed.startsWith('#')) continue;
+          if (IPV4_RE.test(trimmed)) ips.push({ ip: trimmed, category, confidence: 85, source: 'blocklist.de' });
+        }
+        return ips;
+      })
+    );
+    const allIPs = [];
+    for (const r of results) {
+      if (r.status === 'fulfilled') allIPs.push(...r.value);
+    }
+    status.blocklist_de = { ok: true, at: new Date().toISOString(), count: allIPs.length };
+    log(`Blocklist.de: ${allIPs.length} IPs from ${results.filter((r) => r.status === 'fulfilled').length}/${BLOCKLIST_DE_FEEDS.length} feeds`);
+    return allIPs;
+  } catch (e) {
+    log('Blocklist.de fetch failed:', e.message);
+    status.blocklist_de = { ok: false, at: new Date().toISOString(), error: e.message };
+    return [];
+  }
+}
+
+async function fetchFeodoTracker() {
+  try {
+    log('Fetching Feodo Tracker (abuse.ch) C2 blocklist...');
+    const data = await fetchJson('https://feodotracker.abuse.ch/downloads/ipblocklist_recommended.json', {
+      headers: { 'User-Agent': 'threatglobe/0.1' },
+      timeoutMs: 30000,
+    });
+    const ips = (Array.isArray(data) ? data : []).map((entry) => ({
+      ip: entry.ip_address || entry.ip,
+      category: 20, // Exploited Host — active botnet C2
+      confidence: 95,
+      source: 'feodo',
+    })).filter((e) => e.ip && IPV4_RE.test(e.ip));
+    status.feodo = { ok: true, at: new Date().toISOString(), count: ips.length };
+    log(`Feodo Tracker: ${ips.length} C2 IPs`);
+    return ips;
+  } catch (e) {
+    log('Feodo Tracker fetch failed:', e.message);
+    status.feodo = { ok: false, at: new Date().toISOString(), error: e.message };
+    return [];
+  }
+}
+
+async function fetchIPsum() {
+  try {
+    log('Fetching IPsum level-3 aggregated list...');
+    const txt = await fetchText(
+      'https://raw.githubusercontent.com/stamparm/ipsum/master/levels/3.txt',
+      { headers: { 'User-Agent': 'threatglobe/0.1' }, timeoutMs: 30000 }
+    );
+    const ips = [];
+    for (const line of txt.split('\n')) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith('#')) continue;
+      const ip = trimmed.split('\t')[0];
+      if (IPV4_RE.test(ip)) {
+        ips.push({ ip, category: sampleCategory(ip), confidence: 80, source: 'ipsum' });
+      }
+    }
+    status.ipsum = { ok: true, at: new Date().toISOString(), count: ips.length };
+    log(`IPsum: ${ips.length} IPs (level 3+)`);
+    return ips;
+  } catch (e) {
+    log('IPsum fetch failed:', e.message);
+    status.ipsum = { ok: false, at: new Date().toISOString(), error: e.message };
+    return [];
+  }
+}
+
+/**
+ * Deduplicate supplementary IPs against the primary AbuseIPDB set.
+ * Priority among supplementary: feodo > blocklist.de > ipsum.
+ * Returns an array of unique supplementary-only entries, capped at 40k.
+ */
+function deduplicateSupplementary(primaryIPSet, ...sources) {
+  const seen = new Set();
+  const result = [];
+  // Sources are passed in priority order (highest first)
+  for (const batch of sources) {
+    for (const entry of batch) {
+      if (primaryIPSet.has(entry.ip) || seen.has(entry.ip)) continue;
+      seen.add(entry.ip);
+      result.push(entry);
+    }
+  }
+  return result.slice(0, 40000); // cap to bound raw file size
+}
+
 async function enrichGreyNoise(ips) {
   if (!GREYNOISE_KEY || ips.length === 0) {
     return {};
@@ -279,11 +393,14 @@ async function main() {
   log(`Pipeline run for hour ${HOUR}`);
   const readers = await ensureDatabases();
 
-  const [abuseResult, dsTopIPs, dsTopPorts, otxPulses] = await Promise.all([
+  const [abuseResult, dsTopIPs, dsTopPorts, otxPulses, blocklistDeIPs, feodoIPs, ipsumIPs] = await Promise.all([
     fetchAbuseIPDBBlacklist(),
     fetchDShieldTopIPs(),
     fetchDShieldTopPorts(),
     fetchOTXRecentPulses(),
+    fetchBlocklistDe(),
+    fetchFeodoTracker(),
+    fetchIPsum(),
   ]);
   const dsSSH = []; // SSH feed endpoint is not currently returning JSON
 
@@ -320,6 +437,31 @@ async function main() {
     log(`Using ${enrichedIps.length} cached IPs (no fresh AbuseIPDB data this hour)`);
   }
 
+  // Merge supplementary sources (dedup against AbuseIPDB, priority: feodo > blocklist.de > ipsum)
+  const primaryIPSet = new Set(enrichedIps.map((e) => e.ip));
+  const supplementary = deduplicateSupplementary(primaryIPSet, feodoIPs, blocklistDeIPs, ipsumIPs);
+  let suppGeolocated = 0;
+  for (const entry of supplementary) {
+    const geo = lookup(readers, entry.ip);
+    if (!geo || !geo.country) continue;
+    const target = sampleTargetCountry(geo.country, entry.ip);
+    enrichedIps.push({
+      ip: entry.ip,
+      src: geo.country,
+      srcCity: geo.city,
+      srcLat: geo.lat,
+      srcLon: geo.lon,
+      asn: geo.asn,
+      asnOrg: geo.asnOrg,
+      tgt: target,
+      confidence: entry.confidence,
+      lastReportedAt: null,
+      category: entry.category,
+    });
+    suppGeolocated++;
+  }
+  log(`Supplementary: ${suppGeolocated} IPs added after dedup (${supplementary.length} unique, ${feodoIPs.length + blocklistDeIPs.length + ipsumIPs.length} raw total)`);
+
   // Enrich top-reported IPs with GreyNoise. Community tier is 25/week so we sample tiny.
   const topForEnrichment = [...enrichedIps]
     .sort((a, b) => (b.confidence || 0) - (a.confidence || 0))
@@ -335,10 +477,14 @@ async function main() {
     day: DAY,
     generatedAt: new Date().toISOString(),
     counts: {
-      blacklist: abuseResult.fresh ? abuseResult.data.length : enrichedIps.length,
+      blacklist: abuseResult.fresh ? abuseResult.data.length : (enrichedIps.length - suppGeolocated),
       geolocated: enrichedIps.length,
       otxPulses: otxPulses.length,
       dshieldTopIPs: dsTopIPs.length,
+      blocklistDe: blocklistDeIPs.length,
+      feodo: feodoIPs.length,
+      ipsum: ipsumIPs.length,
+      supplementaryAdded: suppGeolocated,
     },
     ips: enrichedIps,
     dshieldTopIPs: dsTopIPs,

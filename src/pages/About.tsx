@@ -59,6 +59,33 @@ export default function About() {
             status={status?.greynoise}
           />
           <SourceCard
+            name="Blocklist.de"
+            role="Supplementary — honeypot-based IP blocklists"
+            powers="Map arcs, country profiles (SSH, FTP, HTTP, mail attacks)"
+            freq="Hourly (6 categorised feeds)"
+            coverage="German-operated honeypot network. Tens of thousands of IPs across protocol-specific feeds (SSH, Apache, mail, FTP, brute-force, IMAP)."
+            link="https://www.blocklist.de"
+            status={status?.blocklist_de}
+          />
+          <SourceCard
+            name="Feodo Tracker"
+            role="Supplementary — botnet C2 server tracking"
+            powers="Map arcs (malware/exploited host category)"
+            freq="Hourly"
+            coverage="High-confidence list of active botnet C2 servers tracked by abuse.ch. Covers Dridex, Emotet, TrickBot, QakBot families."
+            link="https://feodotracker.abuse.ch"
+            status={status?.feodo}
+          />
+          <SourceCard
+            name="IPsum"
+            role="Supplementary — multi-source IP aggregation"
+            powers="Map arcs (mixed categories)"
+            freq="Hourly (level 3+ — IPs on 3+ independent blocklists)"
+            coverage="Meta-aggregation from multiple independent threat feeds. Breadth over depth — catches IPs that multiple sources agree on."
+            link="https://github.com/stamparm/ipsum"
+            status={status?.ipsum}
+          />
+          <SourceCard
             name="MaxMind GeoLite2"
             role="Enrichment — IP geolocation"
             powers="IP → country, city, ASN mapping"
@@ -87,6 +114,9 @@ export default function About() {
             <StatusRow label="DSHIELD" ok={status.dshield_topports?.ok} detail={status.dshield_topports?.count ? `${status.dshield_topports.count} ports` : status.dshield_topports?.error} />
             <StatusRow label="OTX" ok={status.otx?.ok} detail={status.otx?.count != null ? `${status.otx.count} pulses` : status.otx?.error} />
             <StatusRow label="GREYNOISE" ok={status.greynoise?.ok} detail={status.greynoise?.enriched != null ? `${status.greynoise.enriched} enriched${(status.greynoise as any).rateLimited ? ' (rate-limited)' : ''}` : undefined} />
+            <StatusRow label="BLOCKLIST.DE" ok={status.blocklist_de?.ok} detail={status.blocklist_de?.count ? `${status.blocklist_de.count.toLocaleString()} IPs` : status.blocklist_de?.error} />
+            <StatusRow label="FEODO" ok={status.feodo?.ok} detail={status.feodo?.count ? `${status.feodo.count.toLocaleString()} IPs` : status.feodo?.error} />
+            <StatusRow label="IPSUM" ok={status.ipsum?.ok} detail={status.ipsum?.count ? `${status.ipsum.count.toLocaleString()} IPs` : status.ipsum?.error} />
           </div>
         </section>
       )}
@@ -119,9 +149,16 @@ export default function About() {
             background activity; flickers and bright lines = something just changed.
           </p>
           <p>
+            <b className="text-primary">Multi-source deduplication.</b> IPs are collected from multiple feeds (AbuseIPDB, Blocklist.de, Feodo Tracker,
+            IPsum). When the same IP appears in multiple sources, AbuseIPDB data takes priority. Among supplementary sources, Feodo Tracker
+            (verified C2) wins over Blocklist.de (categorised honeypot) which wins over IPsum (generic aggregation). After deduplication, all IPs
+            are geolocated identically via MaxMind.
+          </p>
+          <p>
             <b className="text-primary">Attack categories.</b> AbuseIPDB ships with 23 official categories. We map each IP to a primary category
             using a deterministic hash seeded to a realistic distribution (SSH brute-force dominates, then port scanning, web app attacks, etc),
-            then colour-group them into five visual buckets for the map.
+            then colour-group them into five visual buckets for the map. Blocklist.de IPs carry their feed-specific category (e.g. SSH, FTP, mail).
+            Feodo Tracker IPs are categorised as "Exploited Host". IPsum IPs use the same hash-based category assignment as AbuseIPDB.
           </p>
           <p>
             <b className="text-primary">Noise filtering.</b> Where GreyNoise classifies a source IP as a benign scanner (Shodan, Censys, academic
@@ -147,7 +184,7 @@ export default function About() {
         <div className="text-[11px] text-secondary space-y-0.5">
           <div>This product includes <a className="text-accent hover:underline" href="https://www.maxmind.com" target="_blank" rel="noreferrer">GeoLite2 data created by MaxMind</a>.</div>
           <div>SANS Technology Institute · Internet Storm Center.</div>
-          <div>AbuseIPDB · AlienVault OTX · GreyNoise · Natural Earth (public domain) · Globe.gl (MIT).</div>
+          <div>AbuseIPDB · Blocklist.de · Feodo Tracker (abuse.ch) · IPsum · AlienVault OTX · GreyNoise · Natural Earth (public domain) · Globe.gl (MIT).</div>
         </div>
       </section>
     </div>

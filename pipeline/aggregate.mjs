@@ -6,6 +6,8 @@ import {
   writeJson, readJson, log, dayStamp,
 } from './utils.mjs';
 
+const MAX_PAIRS = Number(process.env.THREATGLOBE_MAX_PAIRS) || 500;
+
 const CATEGORY_LABELS = {
   1: 'DNS Compromise', 2: 'DNS Poisoning', 3: 'Fraud Orders', 4: 'DDoS Attack',
   5: 'FTP Brute-Force', 6: 'Ping of Death', 7: 'Phishing', 8: 'Fraud VoIP',
@@ -53,7 +55,7 @@ function main() {
   log(`Aggregating ${raw.length} raw hours, latest = ${latestRaw.hour}`);
 
   // ---------- latest.json ----------
-  // Country-pair arcs for most recent hour (capped to top ~200 by volume).
+  // Country-pair arcs for most recent hour (capped to top MAX_PAIRS by volume).
   const pairMap = new Map();
   const categoryCounts = {};
   const inboundByCountry = {};
@@ -89,7 +91,7 @@ function main() {
     topTarget: topTarget?.[0] || null,
     topPort,
     categoryCounts,
-    pairs: pairs.slice(0, 200),
+    pairs: pairs.slice(0, MAX_PAIRS),
     inboundByCountry,
     outboundByCountry,
   };

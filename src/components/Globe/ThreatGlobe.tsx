@@ -75,7 +75,7 @@ export default function ThreatGlobe({
       pairs = pairs.filter((p) => p.src === selectedCountry || p.tgt === selectedCountry);
     }
     pairs.sort((a, b) => b.count - a.count);
-    pairs = pairs.slice(0, selectedCountry ? 80 : 200);
+    pairs = pairs.slice(0, selectedCountry ? 120 : 500);
 
     const out: ArcDatum[] = [];
     for (const p of pairs) {

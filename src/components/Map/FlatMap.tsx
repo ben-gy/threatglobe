@@ -73,7 +73,7 @@ export default function FlatMap({
     } else if (selectedCountry) {
       pairs = pairs.filter((p) => p.src === selectedCountry || p.tgt === selectedCountry);
     }
-    pairs = pairs.slice(0, selectedCountry ? 60 : 200);
+    pairs = pairs.slice(0, selectedCountry ? 100 : 500);
     return pairs.map((p) => ({ ...p, key: `${p.src}|${p.tgt}|${p.category}` }));
   }, [latest, filterGroup, selectedCountry, bilateralTarget]);
 

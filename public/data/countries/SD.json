@@ -1,1 +1,0 @@
-{"country":"SD","outboundTotal":1,"inboundTotal":0,"topOutboundTargets":[{"country":"US","count":1}],"topInboundSources":[],"categoryCountsOut":{"20":1},"categoryCountsIn":{},"topAsn":[{"name":"KANARTEL","count":1}],"topSourceIps":[{"ip":"197.254.237.210","count":1,"asnOrg":"KANARTEL","confidence":100,"greynoise":null}],"hourly":{"2026-04-12-01":1}}

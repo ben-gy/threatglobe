@@ -1,0 +1,1 @@
+{"country":"UY","outboundTotal":1,"inboundTotal":0,"topOutboundTargets":[{"country":"DE","count":1}],"topInboundSources":[],"categoryCountsOut":{"22":1},"categoryCountsIn":{},"topAsn":[{"name":"GSL Networks Pty LTD","count":1}],"topSourceIps":[{"ip":"45.154.154.7","count":1,"asnOrg":"GSL Networks Pty LTD","confidence":100,"greynoise":null}],"hourly":{"2026-04-12-01":1}}

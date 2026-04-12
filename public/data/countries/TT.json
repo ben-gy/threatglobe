@@ -1,0 +1,1 @@
+{"country":"TT","outboundTotal":1,"inboundTotal":0,"topOutboundTargets":[{"country":"AU","count":1}],"topInboundSources":[],"categoryCountsOut":{"22":1},"categoryCountsIn":{},"topAsn":[{"name":"TRICO INDUSTRIES LIMITED","count":1}],"topSourceIps":[{"ip":"186.195.251.43","count":1,"asnOrg":"TRICO INDUSTRIES LIMITED","confidence":100,"greynoise":null}],"hourly":{"2026-04-11-23":1}}

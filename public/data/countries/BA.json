@@ -1,0 +1,1 @@
+{"country":"BA","outboundTotal":1,"inboundTotal":0,"topOutboundTargets":[{"country":"SG","count":1}],"topInboundSources":[],"categoryCountsOut":{"23":1},"categoryCountsIn":{},"topAsn":[{"name":"TXTV d.o.o. Tuzla","count":1}],"topSourceIps":[{"ip":"213.91.123.212","count":1,"asnOrg":"TXTV d.o.o. Tuzla","confidence":100,"greynoise":null}],"hourly":{"2026-04-12-05":1}}

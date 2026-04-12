@@ -1,0 +1,1 @@
+{"country":"SO","outboundTotal":1,"inboundTotal":0,"topOutboundTargets":[{"country":"US","count":1}],"topInboundSources":[],"categoryCountsOut":{"5":1},"categoryCountsIn":{},"topAsn":[{"name":"SOMTEL","count":1}],"topSourceIps":[{"ip":"197.231.202.201","count":1,"asnOrg":"SOMTEL","confidence":100,"greynoise":null}],"hourly":{"2026-04-12-05":1}}

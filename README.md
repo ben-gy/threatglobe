@@ -1,6 +1,6 @@
 # ThreatGlobe
 
-A real-time interactive 3D globe visualising global cyber attack activity, aggregated entirely from public threat intelligence feeds. Live at **[threats.benrichardson.dev](https://threats.benrichardson.dev)**.
+A real-time interactive 3D globe visualising global cyber attack activity, aggregated entirely from public threat intelligence feeds. Live at **[threatglobe.benrichardson.dev](https://threatglobe.benrichardson.dev)**.
 
 ## Architecture
 

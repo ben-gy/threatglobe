@@ -1,0 +1,1 @@
+{"country":"HR","outboundTotal":1,"inboundTotal":0,"topOutboundTargets":[{"country":"DE","count":1}],"topInboundSources":[],"categoryCountsOut":{"11":1},"categoryCountsIn":{},"topAsn":[{"name":"Hrvatski Telekom d.d.","count":1}],"topSourceIps":[{"ip":"83.131.12.83","count":1,"asnOrg":"Hrvatski Telekom d.d.","confidence":85,"greynoise":null}],"hourly":{"2026-04-12-23":1}}

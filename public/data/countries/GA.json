@@ -1,0 +1,1 @@
+{"country":"GA","outboundTotal":1,"inboundTotal":0,"topOutboundTargets":[{"country":"US","count":1}],"topInboundSources":[],"categoryCountsOut":{"11":1},"categoryCountsIn":{},"topAsn":[{"name":"GVA-Canalbox","count":1}],"topSourceIps":[{"ip":"102.142.108.201","count":1,"asnOrg":"GVA-Canalbox","confidence":85,"greynoise":null}],"hourly":{"2026-04-12-23":1}}

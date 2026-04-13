@@ -1,0 +1,1 @@
+{"country":"NC","outboundTotal":1,"inboundTotal":0,"topOutboundTargets":[{"country":"CA","count":1}],"topInboundSources":[],"categoryCountsOut":{"21":1},"categoryCountsIn":{},"topAsn":[{"name":"OFFRATEL","count":1}],"topSourceIps":[{"ip":"202.166.176.136","count":1,"asnOrg":"OFFRATEL","confidence":100,"greynoise":null}],"hourly":{"2026-04-13-16":1}}

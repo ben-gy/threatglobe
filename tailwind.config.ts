@@ -16,7 +16,7 @@ export default {
         muted: '#556178',
         accent: '#3b82f6',
         cyan: '#22d3ee',
-        live: '#f59e0b',
+        live: '#10b981',
         danger: '#ef4444',
         success: '#10b981',
         cat: {

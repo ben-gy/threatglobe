@@ -22,8 +22,8 @@
   --text-muted: #556178;
   --accent-blue: #3b82f6;
   --accent-cyan: #22d3ee;
-  --status-live: #f59e0b;
-  --status-live-glow: rgba(245, 158, 11, 0.3);
+  --status-live: #10b981;
+  --status-live-glow: rgba(16, 185, 129, 0.3);
   --status-completed: #10b981;
   --danger: #ef4444;
 
@@ -220,6 +220,12 @@ body { overscroll-behavior: none; }
   overflow: hidden;
 }
 .bar-fill { height: 100%; }
+
+/* Directional arc dash animation (flat map) */
+@keyframes arc-flow {
+  from { stroke-dashoffset: var(--arc-dash, 20px); }
+  to { stroke-dashoffset: 0; }
+}
 
 /* New-arc indicator (used by globe/flat-map) */
 @keyframes new-arc-flash {

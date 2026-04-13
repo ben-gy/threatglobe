@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import Globe from 'react-globe.gl';
 import type { LatestData, Pair, CategoryGroup } from '../../types';
-import { GROUP_COLOURS } from '../../utils/colours';
+import { GROUP_COLOURS, GROUP_LABELS, CATEGORY_LABELS } from '../../utils/colours';
 import { getCountry } from '../../utils/countries';
 import { useCountriesGeo } from '../../hooks/useCountriesGeo';
 import { isoOf } from '../../utils/iso';
@@ -24,6 +24,8 @@ interface ArcDatum {
   count: number;
   src: string;
   tgt: string;
+  srcName: string;
+  tgtName: string;
   group: CategoryGroup;
   category: number;
   key: string;
@@ -41,6 +43,7 @@ export default function ThreatGlobe({
   const globeRef = useRef<any>(null);
   const features = useCountriesGeo();
   const [size, setSize] = useState({ width: window.innerWidth, height: window.innerHeight });
+  const [selectedArc, setSelectedArc] = useState<string | null>(null);
 
   useEffect(() => {
     const handle = () => setSize({ width: window.innerWidth, height: window.innerHeight });
@@ -61,6 +64,9 @@ export default function ThreatGlobe({
     }
   }, [globeRef.current, selectedCountry]);
 
+  // Clear arc selection when country/filter changes
+  useEffect(() => { setSelectedArc(null); }, [selectedCountry, bilateralTarget, filterGroup]);
+
   const arcs = useMemo<ArcDatum[]>(() => {
     if (!latest) return [];
     let pairs: Pair[] = latest.pairs;
@@ -75,7 +81,6 @@ export default function ThreatGlobe({
       pairs = pairs.filter((p) => p.src === selectedCountry || p.tgt === selectedCountry);
     }
     pairs.sort((a, b) => b.count - a.count);
-    pairs = pairs.slice(0, selectedCountry ? 120 : 500);
 
     const out: ArcDatum[] = [];
     for (const p of pairs) {
@@ -92,6 +97,8 @@ export default function ThreatGlobe({
         count: p.count,
         src: p.src,
         tgt: p.tgt,
+        srcName: src.name,
+        tgtName: tgt.name,
         group: p.group,
         category: p.category,
         key,
@@ -120,6 +127,10 @@ export default function ThreatGlobe({
 
   const inboundByIso2 = latest?.inboundByCountry || {};
   const maxInbound = useMemo(() => Math.max(1, ...Object.values(inboundByIso2)), [inboundByIso2]);
+
+  const handleArcClick = useCallback((d: any) => {
+    setSelectedArc((prev) => (prev === d.key ? null : d.key));
+  }, []);
 
   return (
     <div className="globe-container">
@@ -155,7 +166,7 @@ export default function ThreatGlobe({
           return `<div class="tooltip">
             <div style="font-weight:600; font-family: var(--font-sans);">${name}</div>
             <div style="color:#8896ab;font-size:10px">
-              In <b style="color:#f59e0b">${inbound.toLocaleString()}</b>
+              In <b style="color:#10b981">${inbound.toLocaleString()}</b>
               · Out <b style="color:#22d3ee">${outbound.toLocaleString()}</b>
             </div>
           </div>`;
@@ -169,22 +180,71 @@ export default function ThreatGlobe({
         arcStartLng={(d: any) => d.startLng}
         arcEndLat={(d: any) => d.endLat}
         arcEndLng={(d: any) => d.endLng}
-        arcColor={(d: any) => [d.color, d.color]}
-        arcStroke={(d: any) =>
-          d.isNew
-            ? 0.55
-            : 0.12 + Math.min(0.32, (Math.log(d.count + 1) / Math.log(maxArcCount + 1)) * 0.32)
-        }
+        arcColor={(d: any) => {
+          if (selectedArc && d.key !== selectedArc) return ['rgba(100,100,120,0.12)', 'rgba(100,100,120,0.12)'];
+          return [d.color, d.color];
+        }}
+        arcStroke={(d: any) => {
+          if (selectedArc && d.key !== selectedArc) return 0.06;
+          const base = 0.12 + Math.min(0.44, (Math.log(d.count + 1) / Math.log(maxArcCount + 1)) * 0.44);
+          return d.isNew ? Math.max(base, 0.55) : base;
+        }}
         arcAltitudeAutoScale={0.34}
-        arcDashLength={(d: any) => (d.isNew ? 0.5 : 1)}
-        arcDashGap={(d: any) => (d.isNew ? 0.25 : 0)}
-        arcDashAnimateTime={(d: any) => (d.isNew ? 1800 : 0)}
-        arcDashInitialGap={(d: any) => (d.isNew ? Math.random() : 0)}
-        arcLabel={(d: any) => `<div class="tooltip">
-          <div><b>${d.src}</b> → <b>${d.tgt}</b></div>
-          <div style="color:#8896ab;font-size:10px">${d.count.toLocaleString()} · ${d.group}${d.isNew ? ' · NEW' : ''}</div>
-        </div>`}
+        arcDashLength={0.4}
+        arcDashGap={0.2}
+        arcDashAnimateTime={(d: any) => {
+          if (selectedArc && d.key !== selectedArc) return 0;
+          return d.isNew ? 1200 : 2400;
+        }}
+        arcDashInitialGap={(d: any) => Math.random()}
+        onArcClick={handleArcClick}
+        arcLabel={(d: any) => {
+          const catLabel = CATEGORY_LABELS[d.category] || `Cat ${d.category}`;
+          const groupLabel = GROUP_LABELS[d.group as CategoryGroup] || d.group;
+          return `<div class="tooltip" style="min-width:180px">
+            <div style="font-weight:700;font-size:12px;font-family:var(--font-sans);margin-bottom:4px">
+              ${d.srcName} <span style="color:${d.color}">→</span> ${d.tgtName}
+            </div>
+            <div style="display:grid;grid-template-columns:auto 1fr;gap:2px 8px;font-size:10px;color:#8896ab">
+              <span>Attacks</span><span style="color:var(--text-primary);font-weight:600">${d.count.toLocaleString()}</span>
+              <span>Category</span><span style="color:var(--text-primary)">${catLabel}</span>
+              <span>Group</span><span style="color:${d.color};font-weight:600">${groupLabel}</span>
+            </div>
+            ${d.isNew ? '<div style="margin-top:4px;color:#10b981;font-size:9px;font-weight:700;letter-spacing:1px">NEW</div>' : ''}
+            <div style="margin-top:4px;color:#556178;font-size:9px">Click to isolate</div>
+          </div>`;
+        }}
       />
+
+      {/* Selected arc detail panel */}
+      {selectedArc && (() => {
+        const arc = arcs.find((a) => a.key === selectedArc);
+        if (!arc) return null;
+        const catLabel = CATEGORY_LABELS[arc.category] || `Cat ${arc.category}`;
+        const groupLabel = GROUP_LABELS[arc.group] || arc.group;
+        return (
+          <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-30 bg-panel border border-border rounded-lg p-4 font-mono text-[11px] shadow-2xl min-w-[260px]">
+            <div className="flex items-center justify-between mb-3">
+              <div className="text-[13px] font-bold font-sans text-primary">
+                {arc.srcName} <span style={{ color: arc.color }}>→</span> {arc.tgtName}
+              </div>
+              <button onClick={() => setSelectedArc(null)} className="text-muted hover:text-primary text-lg leading-none">&times;</button>
+            </div>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+              <span className="text-muted">Attacks</span>
+              <span className="text-primary font-bold">{arc.count.toLocaleString()}</span>
+              <span className="text-muted">Category</span>
+              <span className="text-primary">{catLabel}</span>
+              <span className="text-muted">Group</span>
+              <span style={{ color: arc.color }} className="font-bold">{groupLabel}</span>
+              <span className="text-muted">Source</span>
+              <span className="text-primary">{arc.src}</span>
+              <span className="text-muted">Target</span>
+              <span className="text-primary">{arc.tgt}</span>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }

@@ -1,0 +1,1 @@
+{"country":"MG","outboundTotal":1,"inboundTotal":0,"topOutboundTargets":[{"country":"SG","count":1}],"topInboundSources":[],"categoryCountsOut":{"14":1},"categoryCountsIn":{},"topAsn":[{"name":"Orange Madagascar","count":1}],"topSourceIps":[{"ip":"41.63.156.2","count":1,"asnOrg":"Orange Madagascar","confidence":80,"greynoise":null}],"hourly":{"2026-04-13-01":1}}

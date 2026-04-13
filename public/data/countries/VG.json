@@ -1,0 +1,1 @@
+{"country":"VG","outboundTotal":1,"inboundTotal":0,"topOutboundTargets":[{"country":"US","count":1}],"topInboundSources":[],"categoryCountsOut":{"22":1},"categoryCountsIn":{},"topAsn":[{"name":"Hbing Limited","count":1}],"topSourceIps":[{"ip":"45.148.145.60","count":1,"asnOrg":"Hbing Limited","confidence":85,"greynoise":null}],"hourly":{"2026-04-13-03":1}}

@@ -1,0 +1,1 @@
+{"country":"YT","outboundTotal":1,"inboundTotal":0,"topOutboundTargets":[{"country":"US","count":1}],"topInboundSources":[],"categoryCountsOut":{"21":1},"categoryCountsIn":{},"topAsn":[{"name":"Orange","count":1}],"topSourceIps":[{"ip":"92.142.155.209","count":1,"asnOrg":"Orange","confidence":85,"greynoise":null}],"hourly":{"2026-04-17-06":1}}

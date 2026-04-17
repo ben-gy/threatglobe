@@ -1,0 +1,1 @@
+{"country":"BQ","outboundTotal":1,"inboundTotal":0,"topOutboundTargets":[{"country":"SG","count":1}],"topInboundSources":[],"categoryCountsOut":{"14":1},"categoryCountsIn":{},"topAsn":[{"name":"Flamingo TV Bonaire N.V.","count":1}],"topSourceIps":[{"ip":"200.107.84.239","count":1,"asnOrg":"Flamingo TV Bonaire N.V.","confidence":100,"greynoise":null}],"hourly":{"2026-04-17-11":1}}

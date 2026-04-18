@@ -1,0 +1,1 @@
+{"country":"WS","outboundTotal":1,"inboundTotal":0,"topOutboundTargets":[{"country":"NL","count":1}],"topInboundSources":[],"categoryCountsOut":{"18":1},"categoryCountsIn":{},"topAsn":[{"name":"Vodafone Samoa Limited","count":1}],"topSourceIps":[{"ip":"202.4.38.102","count":1,"asnOrg":"Vodafone Samoa Limited","confidence":100,"greynoise":null}],"hourly":{"2026-04-18-21":1}}

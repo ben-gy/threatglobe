@@ -1,0 +1,1 @@
+{"country":"JE","outboundTotal":1,"inboundTotal":0,"topOutboundTargets":[{"country":"NL","count":1}],"topInboundSources":[],"categoryCountsOut":{"18":1},"categoryCountsIn":{},"topAsn":[{"name":"JTGlobal","count":1}],"topSourceIps":[{"ip":"87.244.81.247","count":1,"asnOrg":"JTGlobal","confidence":100,"greynoise":null}],"hourly":{"2026-04-18-21":1}}

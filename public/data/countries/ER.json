@@ -1,0 +1,1 @@
+{"country":"ER","outboundTotal":1,"inboundTotal":0,"topOutboundTargets":[{"country":"GB","count":1}],"topInboundSources":[],"categoryCountsOut":{"14":1},"categoryCountsIn":{},"topAsn":[{"name":"Interserver, Inc","count":1}],"topSourceIps":[{"ip":"85.239.151.36","count":1,"asnOrg":"Interserver, Inc","confidence":100,"greynoise":null}],"hourly":{"2026-04-21-16":1}}

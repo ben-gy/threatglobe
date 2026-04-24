@@ -1,0 +1,1 @@
+{"country":"IM","outboundTotal":1,"inboundTotal":0,"topOutboundTargets":[{"country":"JP","count":1}],"topInboundSources":[],"categoryCountsOut":{"22":1},"categoryCountsIn":{},"topAsn":[{"name":"Sure (Guernsey) Limited","count":1}],"topSourceIps":[{"ip":"46.31.205.160","count":1,"asnOrg":"Sure (Guernsey) Limited","confidence":85,"greynoise":null}],"hourly":{"2026-04-24-10":1}}

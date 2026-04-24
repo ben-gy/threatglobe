@@ -1,0 +1,1 @@
+{"country":"BM","outboundTotal":1,"inboundTotal":0,"topOutboundTargets":[{"country":"US","count":1}],"topInboundSources":[],"categoryCountsOut":{"22":1},"categoryCountsIn":{},"topAsn":[{"name":"Logic Communications Ltd","count":1}],"topSourceIps":[{"ip":"199.172.255.185","count":1,"asnOrg":"Logic Communications Ltd","confidence":85,"greynoise":null}],"hourly":{"2026-04-24-07":1}}

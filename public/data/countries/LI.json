@@ -1,0 +1,1 @@
+{"country":"LI","outboundTotal":1,"inboundTotal":0,"topOutboundTargets":[{"country":"ES","count":1}],"topInboundSources":[],"categoryCountsOut":{"4":1},"categoryCountsIn":{},"topAsn":[{"name":"M247 Europe SRL","count":1}],"topSourceIps":[{"ip":"135.136.18.3","count":1,"asnOrg":"M247 Europe SRL","confidence":100,"greynoise":null}],"hourly":{"2026-04-24-21":1}}

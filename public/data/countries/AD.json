@@ -1,0 +1,1 @@
+{"country":"AD","outboundTotal":1,"inboundTotal":0,"topOutboundTargets":[{"country":"US","count":1}],"topInboundSources":[],"categoryCountsOut":{"18":1},"categoryCountsIn":{},"topAsn":[{"name":"Andorra Telecom, S.a.u.","count":1}],"topSourceIps":[{"ip":"89.150.13.132","count":1,"asnOrg":"Andorra Telecom, S.a.u.","confidence":100,"greynoise":null}],"hourly":{"2026-04-27-01":1}}

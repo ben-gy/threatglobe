@@ -1,0 +1,1 @@
+{"country":"TD","outboundTotal":1,"inboundTotal":0,"topOutboundTargets":[{"country":"SG","count":1}],"topInboundSources":[],"categoryCountsOut":{"11":1},"categoryCountsIn":{},"topAsn":[{"name":"MILLICOM-CHAD","count":1}],"topSourceIps":[{"ip":"154.73.161.151","count":1,"asnOrg":"MILLICOM-CHAD","confidence":85,"greynoise":null}],"hourly":{"2026-05-02-10":1}}

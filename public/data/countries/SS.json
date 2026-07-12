@@ -1,0 +1,1 @@
+{"country":"SS","outboundTotal":1,"inboundTotal":0,"topOutboundTargets":[{"country":"GB","count":1}],"topInboundSources":[],"categoryCountsOut":{"5":1},"categoryCountsIn":{},"topAsn":[{"name":"IPTEC Limited","count":1}],"topSourceIps":[{"ip":"102.211.193.145","count":1,"asnOrg":"IPTEC Limited","confidence":80,"greynoise":null}],"hourly":{"2026-07-12-08":1}}

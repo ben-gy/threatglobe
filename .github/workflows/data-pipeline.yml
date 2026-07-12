@@ -2,7 +2,7 @@ name: Threat Data Pipeline
 
 on:
   schedule:
-    - cron: '15 4 14 1,4,7,10 *'   # Cadence: quarterly archive; live values are fetched client-side
+    - cron: '15 4 14 1,4,7,10 *'   # Cadence: quarterly snapshot. NOTE: feeds need secret API keys, so this data CANNOT move client-side; the globe shows the last snapshot, not live data.
   workflow_dispatch: {}
   push:
     branches: [main]

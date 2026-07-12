@@ -143,6 +143,15 @@ export default function App() {
         >
           benrichardson.dev
         </a>
+        {' · '}
+        <a
+          href="https://hub.benrichardson.dev"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="chicago-font text-secondary hover:text-primary"
+        >
+          more tools &amp; sites
+        </a>
       </div>
 
       {/* Country side panel */}

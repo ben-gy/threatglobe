@@ -2,7 +2,7 @@ name: Threat Data Pipeline
 
 on:
   schedule:
-    - cron: '15 4 * * *'   # Hourly at minute 17 to avoid contention
+    - cron: '15 4 14 1,4,7,10 *'   # Cadence: quarterly archive; live values are fetched client-side
   workflow_dispatch: {}
   push:
     branches: [main]

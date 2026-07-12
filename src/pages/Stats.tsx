@@ -28,7 +28,7 @@ export default function Stats() {
     <div className="space-y-5">
       <p className="text-secondary text-xs leading-relaxed">
         Rolling aggregate across {summary.hoursIncluded} hour{summary.hoursIncluded === 1 ? '' : 's'} of data.
-        Counts reflect attacks reported to AbuseIPDB and aggregated by ThreatGlobe.
+        Counts reflect attacks reported to public threat-intel feeds and aggregated by ThreatGlobe.
       </p>
 
       <div className="bg-bg/40 border border-accent/40 rounded p-4">

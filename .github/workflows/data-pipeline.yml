@@ -2,7 +2,7 @@ name: Threat Data Pipeline
 
 on:
   schedule:
-    - cron: '15 4 14 1,4,7,10 *'   # Cadence: quarterly snapshot. NOTE: feeds need secret API keys, so this data CANNOT move client-side; the globe shows the last snapshot, not live data.
+    - cron: '15 4 14 1,4,7,10 *'   # Cadence: quarterly snapshot. Keyed feeds (AbuseIPDB/OTX/GreyNoise) are DISABLED in collect.mjs — secrets can't ship client-side; snapshot runs on keyless feeds only. The globe shows the last snapshot, not live data.
   workflow_dispatch: {}
   push:
     branches: [main]
@@ -36,9 +36,9 @@ jobs:
       - name: Collect raw threat data
         working-directory: pipeline
         env:
-          ABUSEIPDB_API_KEY: ${{ secrets.ABUSEIPDB_API_KEY }}
-          OTX_API_KEY: ${{ secrets.OTX_API_KEY }}
-          GREYNOISE_API_KEY: ${{ secrets.GREYNOISE_API_KEY }}
+          # AbuseIPDB/OTX/GreyNoise keys intentionally not passed — those sources
+          # are disabled in collect.mjs (KEYED_SOURCES_DISABLED). MaxMind stays:
+          # it geolocates the keyless feeds and never leaves the pipeline.
           MAXMIND_LICENSE_KEY: ${{ secrets.MAXMIND_LICENSE_KEY }}
         run: node collect.mjs
 

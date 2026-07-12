@@ -7,14 +7,15 @@ interface Props {
   generatedAt?: string;
 }
 
-const SOURCES: Array<{ key: keyof PipelineStatus; label: string; unit?: string }> = [
-  { key: 'abuseipdb', label: 'AbuseIPDB', unit: 'IPs' },
+// Keyed sources are switched off in the pipeline (secrets can't ship client-side).
+const SOURCES: Array<{ key: keyof PipelineStatus; label: string; unit?: string; disabled?: boolean }> = [
+  { key: 'abuseipdb', label: 'AbuseIPDB', unit: 'IPs', disabled: true },
   { key: 'blocklist_de', label: 'Blocklist.de', unit: 'IPs' },
   { key: 'feodo', label: 'Feodo Tracker', unit: 'IPs' },
   { key: 'ipsum', label: 'IPsum', unit: 'IPs' },
   { key: 'dshield_topports', label: 'DShield', unit: 'ports' },
-  { key: 'otx', label: 'OTX', unit: 'pulses' },
-  { key: 'greynoise', label: 'GreyNoise' },
+  { key: 'otx', label: 'OTX', unit: 'pulses', disabled: true },
+  { key: 'greynoise', label: 'GreyNoise', disabled: true },
 ];
 
 function formatTime(iso?: string) {
@@ -24,14 +25,6 @@ function formatTime(iso?: string) {
     ' ' + d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 }
 
-function nextUpdate(lastRun?: string) {
-  if (!lastRun) return '—';
-  const next = new Date(new Date(lastRun).getTime() + 60 * 60 * 1000);
-  const diff = next.getTime() - Date.now();
-  if (diff <= 0) return 'imminent';
-  const mins = Math.ceil(diff / 60000);
-  return `~${mins}m`;
-}
 
 export default function LivePopover({ onClose, generatedAt }: Props) {
   const ref = useRef<HTMLDivElement>(null);
@@ -61,8 +54,21 @@ export default function LivePopover({ onClose, generatedAt }: Props) {
       </div>
 
       <div className="space-y-2">
-        {SOURCES.map(({ key, label, unit }) => {
+        {SOURCES.map(({ key, label, unit, disabled }) => {
           const s = status?.[key] as any;
+          if (disabled) {
+            return (
+              <div key={key} className="flex items-center justify-between gap-3 opacity-60">
+                <div className="flex items-center gap-2">
+                  <div className="h-1.5 w-1.5 rounded-full flex-shrink-0 bg-muted" />
+                  <span className="text-muted line-through">{label}</span>
+                </div>
+                <div className="text-right">
+                  <span className="text-muted text-[9px] uppercase tracking-wider">disabled</span>
+                </div>
+              </div>
+            );
+          }
           const ok = s?.ok;
           const count = s?.count ?? s?.enriched;
           const detail = count != null && unit ? `${count.toLocaleString()} ${unit}` : count != null ? `${count}` : undefined;
@@ -89,8 +95,8 @@ export default function LivePopover({ onClose, generatedAt }: Props) {
           <span className="text-primary">{formatTime(status?.lastRun || generatedAt)}</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-muted">Next update</span>
-          <span className="text-primary">{nextUpdate(status?.lastRun)}</span>
+          <span className="text-muted">Cadence</span>
+          <span className="text-primary">periodic snapshot</span>
         </div>
         <div className="flex justify-between">
           <span className="text-muted">Data hour</span>

@@ -15,6 +15,17 @@ const ABUSEIPDB_KEY = process.env.ABUSEIPDB_API_KEY;
 const OTX_KEY = process.env.OTX_API_KEY;
 const GREYNOISE_KEY = process.env.GREYNOISE_API_KEY;
 
+// AbuseIPDB, OTX, and GreyNoise require secret API keys, so they can never be
+// fetched from the browser. Disabled while we decide whether ThreatGlobe stays
+// a periodic snapshot or gets rethought; the pipeline runs on keyless feeds
+// only (Blocklist.de, Feodo Tracker, IPsum, DShield). Flip to false to re-enable.
+const KEYED_SOURCES_DISABLED = true;
+const DISABLED_REASON = 'requires a secret API key; disabled pending client-side migration decision';
+
+function disabledStatus() {
+  return { ok: false, disabled: true, at: new Date().toISOString(), reason: DISABLED_REASON };
+}
+
 const now = new Date();
 const HOUR = hourStamp(now);
 const DAY = dayStamp(now);
@@ -46,6 +57,12 @@ function loadCachedBlacklistIPs() {
 }
 
 async function fetchAbuseIPDBBlacklist() {
+  if (KEYED_SOURCES_DISABLED) {
+    log('AbuseIPDB disabled (keyed source)');
+    status.abuseipdb = disabledStatus();
+    return { fresh: false, disabled: true, data: [] };
+  }
+
   if (!ABUSEIPDB_KEY) {
     log('WARNING: ABUSEIPDB_API_KEY missing, using cached blacklist');
     return { fresh: false, data: [] };
@@ -146,6 +163,11 @@ async function fetchDShieldSSHUsernames() {
 }
 
 async function fetchOTXRecentPulses() {
+  if (KEYED_SOURCES_DISABLED) {
+    log('OTX disabled (keyed source)');
+    status.otx = disabledStatus();
+    return [];
+  }
   if (!OTX_KEY) {
     log('WARNING: OTX_API_KEY missing, skipping OTX');
     return [];
@@ -283,6 +305,11 @@ function deduplicateSupplementary(primaryIPSet, ...sources) {
 }
 
 async function enrichGreyNoise(ips) {
+  if (KEYED_SOURCES_DISABLED) {
+    log('GreyNoise disabled (keyed source)');
+    status.greynoise = disabledStatus();
+    return {};
+  }
   if (!GREYNOISE_KEY || ips.length === 0) {
     return {};
   }
@@ -431,6 +458,11 @@ async function main() {
       });
     }
     log(`Geolocated ${enrichedIps.length}/${abuseResult.data.length} fresh IPs`);
+  } else if (abuseResult.disabled) {
+    // Source disabled — build this snapshot from keyless feeds only rather than
+    // recirculating stale AbuseIPDB IPs from old raw files.
+    enrichedIps = [];
+    log('AbuseIPDB disabled; building snapshot from keyless feeds only');
   } else {
     // No fresh data — reuse cached IPs from the most recent raw file.
     enrichedIps = loadCachedBlacklistIPs();

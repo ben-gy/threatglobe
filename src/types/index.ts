@@ -78,18 +78,28 @@ export interface PortData {
   }[];
 }
 
+export interface SourceStatus {
+  ok: boolean;
+  at: string;
+  count?: number;
+  error?: string;
+  /** Source needs a secret API key and is switched off in the pipeline. */
+  disabled?: boolean;
+  reason?: string;
+}
+
 export interface PipelineStatus {
   lastRun?: string;
   hour?: string;
-  abuseipdb?: { ok: boolean; at: string; count?: number; error?: string };
-  dshield_topips?: { ok: boolean; at: string; count?: number; error?: string };
-  dshield_topports?: { ok: boolean; at: string; count?: number; error?: string };
-  dshield_ssh?: { ok: boolean; at: string; error?: string };
-  otx?: { ok: boolean; at: string; count?: number; error?: string };
-  greynoise?: { ok: boolean; at: string; enriched?: number; failed?: number };
-  blocklist_de?: { ok: boolean; at: string; count?: number; error?: string };
-  feodo?: { ok: boolean; at: string; count?: number; error?: string };
-  ipsum?: { ok: boolean; at: string; count?: number; error?: string };
+  abuseipdb?: SourceStatus;
+  dshield_topips?: SourceStatus;
+  dshield_topports?: SourceStatus;
+  dshield_ssh?: SourceStatus;
+  otx?: SourceStatus;
+  greynoise?: SourceStatus & { enriched?: number; failed?: number };
+  blocklist_de?: SourceStatus;
+  feodo?: SourceStatus;
+  ipsum?: SourceStatus;
 }
 
 export interface OtxPulses {

@@ -26,16 +26,17 @@ export default function About() {
             name="AbuseIPDB"
             role="Primary — crowdsourced IP abuse reports"
             powers="Map arcs, country profiles, IP lookup"
-            freq="Hourly blacklist pull (up to 10,000 IPs)"
+            freq="Disabled (was: 5×/day blacklist pull, up to 10,000 IPs)"
             coverage="Strongest on SSH brute-force and web exploits. Biased toward regions where contributors run infrastructure (US / Europe / East Asia). Does not include UDP-based DDoS."
             link="https://abuseipdb.com"
             status={status?.abuseipdb}
+            disabled
           />
           <SourceCard
             name="DShield / SANS ISC"
             role="Supplementary — volunteer firewall and honeypot logs"
             powers="Port heatmap"
-            freq="6-hourly top-ports API"
+            freq="Top-ports API, each pipeline run"
             coverage="Operational since 2000. Strong on port scanning trends. Volunteer density varies by region."
             link="https://isc.sans.edu"
             status={status?.dshield_topports}
@@ -44,25 +45,27 @@ export default function About() {
             name="AlienVault OTX"
             role="Supplementary — community threat intel pulses"
             powers="CVE context, malware names"
-            freq="Every 4 hours"
+            freq="Disabled (was: every 4 hours)"
             coverage="Broadest category coverage (malware C2, phishing, APT). Quality varies — community curated."
             link="https://otx.alienvault.com"
             status={status?.otx}
+            disabled
           />
           <SourceCard
             name="GreyNoise"
             role="Enrichment — internet scanner classification"
             powers="Distinguishing benign scanners from likely malicious"
-            freq="Sampled per run (community tier is 25 lookups/week)"
+            freq="Disabled (was: sampled per run)"
             coverage="Only captures indiscriminate scanners. Cannot see targeted attacks."
             link="https://greynoise.io"
             status={status?.greynoise}
+            disabled
           />
           <SourceCard
             name="Blocklist.de"
             role="Supplementary — honeypot-based IP blocklists"
             powers="Map arcs, country profiles (SSH, FTP, HTTP, mail attacks)"
-            freq="Hourly (6 categorised feeds)"
+            freq="Each pipeline run (6 categorised feeds)"
             coverage="German-operated honeypot network. Tens of thousands of IPs across protocol-specific feeds (SSH, Apache, mail, FTP, brute-force, IMAP)."
             link="https://www.blocklist.de"
             status={status?.blocklist_de}
@@ -71,7 +74,7 @@ export default function About() {
             name="Feodo Tracker"
             role="Supplementary — botnet C2 server tracking"
             powers="Map arcs (malware/exploited host category)"
-            freq="Hourly"
+            freq="Each pipeline run"
             coverage="High-confidence list of active botnet C2 servers tracked by abuse.ch. Covers Dridex, Emotet, TrickBot, QakBot families."
             link="https://feodotracker.abuse.ch"
             status={status?.feodo}
@@ -80,7 +83,7 @@ export default function About() {
             name="IPsum"
             role="Supplementary — multi-source IP aggregation"
             powers="Map arcs (mixed categories)"
-            freq="Hourly (level 3+ — IPs on 3+ independent blocklists)"
+            freq="Each pipeline run (level 3+ — IPs on 3+ independent blocklists)"
             coverage="Meta-aggregation from multiple independent threat feeds. Breadth over depth — catches IPs that multiple sources agree on."
             link="https://github.com/stamparm/ipsum"
             status={status?.ipsum}
@@ -110,10 +113,10 @@ export default function About() {
           <div className="bg-bg/40 border border-border rounded p-3 font-mono text-[11px] space-y-1">
             <StatusRow label="LAST RUN" value={status.lastRun || '—'} />
             <StatusRow label="HOUR" value={status.hour || '—'} />
-            <StatusRow label="ABUSEIPDB" ok={status.abuseipdb?.ok} detail={status.abuseipdb?.count ? `${status.abuseipdb.count.toLocaleString()} IPs` : status.abuseipdb?.error} />
+            <StatusRow label="ABUSEIPDB" disabled />
             <StatusRow label="DSHIELD" ok={status.dshield_topports?.ok} detail={status.dshield_topports?.count ? `${status.dshield_topports.count} ports` : status.dshield_topports?.error} />
-            <StatusRow label="OTX" ok={status.otx?.ok} detail={status.otx?.count != null ? `${status.otx.count} pulses` : status.otx?.error} />
-            <StatusRow label="GREYNOISE" ok={status.greynoise?.ok} detail={status.greynoise?.enriched != null ? `${status.greynoise.enriched} enriched${(status.greynoise as any).rateLimited ? ' (rate-limited)' : ''}` : undefined} />
+            <StatusRow label="OTX" disabled />
+            <StatusRow label="GREYNOISE" disabled />
             <StatusRow label="BLOCKLIST.DE" ok={status.blocklist_de?.ok} detail={status.blocklist_de?.count ? `${status.blocklist_de.count.toLocaleString()} IPs` : status.blocklist_de?.error} />
             <StatusRow label="FEODO" ok={status.feodo?.ok} detail={status.feodo?.count ? `${status.feodo.count.toLocaleString()} IPs` : status.feodo?.error} />
             <StatusRow label="IPSUM" ok={status.ipsum?.ok} detail={status.ipsum?.count ? `${status.ipsum.count.toLocaleString()} IPs` : status.ipsum?.error} />
@@ -175,7 +178,7 @@ export default function About() {
           <li><b className="text-primary">Target country is approximated.</b> See Methodology — arcs show "regional traffic", not "victim X was hit by attacker Y".</li>
           <li><b className="text-primary">Reporter bias.</b> AbuseIPDB data skews toward regions where contributors are most active.</li>
           <li><b className="text-primary">Attribution ≠ origin.</b> Botnets use compromised infrastructure worldwide.</li>
-          <li><b className="text-primary">Latency.</b> Data is at minimum 1 hour old due to the pipeline schedule.</li>
+          <li><b className="text-primary">Latency.</b> The dataset is a periodic snapshot — it reflects the most recent pipeline run, not this minute's traffic.</li>
         </ul>
       </section>
 
@@ -199,6 +202,7 @@ function SourceCard({
   coverage,
   link,
   status,
+  disabled,
 }: {
   name: string;
   role: string;
@@ -207,18 +211,28 @@ function SourceCard({
   coverage: string;
   link: string;
   status?: { ok: boolean; at: string } | null;
+  disabled?: boolean;
 }) {
   return (
-    <div className="bg-bg/40 border border-border rounded p-3">
+    <div className={`bg-bg/40 border border-border rounded p-3 ${disabled ? 'opacity-60' : ''}`}>
       <div className="flex items-center justify-between">
         <h3 className="text-[11px] font-bold uppercase tracking-[1px]">{name}</h3>
-        {status !== undefined && (
+        {disabled ? (
+          <span className="text-[8px] px-1.5 py-0.5 rounded uppercase tracking-wider font-bold bg-muted/20 text-muted">
+            DISABLED
+          </span>
+        ) : status !== undefined && (
           <span className={`text-[8px] px-1.5 py-0.5 rounded uppercase tracking-wider font-bold ${status?.ok ? 'bg-success/20 text-success' : 'bg-danger/20 text-danger'}`}>
             {status?.ok ? 'LIVE' : 'STALE'}
           </span>
         )}
       </div>
       <p className="text-[10px] text-accent mt-0.5">{role}</p>
+      {disabled && (
+        <p className="text-[10px] text-muted mt-1">
+          Switched off: this feed needs a secret API key, which can't ship with a client-side site.
+        </p>
+      )}
       <dl className="mt-2 text-[10px] space-y-1">
         <Field label="Powers" value={powers} />
         <Field label="Frequency" value={freq} />
@@ -240,7 +254,18 @@ function Field({ label, value }: { label: string; value: string }) {
   );
 }
 
-function StatusRow({ label, value, ok, detail }: { label: string; value?: string; ok?: boolean; detail?: string }) {
+function StatusRow({ label, value, ok, detail, disabled }: { label: string; value?: string; ok?: boolean; detail?: string; disabled?: boolean }) {
+  if (disabled) {
+    return (
+      <div className="flex items-center justify-between">
+        <span className="text-muted uppercase tracking-wider">{label}</span>
+        <span>
+          <span className="inline-block w-1.5 h-1.5 rounded-full mr-2 bg-muted" />
+          <span className="text-muted uppercase tracking-wider">disabled</span>
+        </span>
+      </div>
+    );
+  }
   return (
     <div className="flex items-center justify-between">
       <span className="text-muted uppercase tracking-wider">{label}</span>

@@ -145,7 +145,7 @@ export default function App() {
         </a>
         {' · '}
         <a
-          href="https://hub.benrichardson.dev"
+          href="https://sites.benrichardson.dev"
           target="_blank"
           rel="noopener noreferrer"
           className="chicago-font text-secondary hover:text-primary"

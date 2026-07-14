@@ -1,0 +1,1 @@
+{"country":"LC","outboundTotal":1,"inboundTotal":0,"topOutboundTargets":[{"country":"GB","count":1}],"topInboundSources":[],"categoryCountsOut":{"11":1},"categoryCountsIn":{},"topAsn":[{"name":"Digicel St.Lucia Ltd","count":1}],"topSourceIps":[{"ip":"199.223.249.41","count":1,"asnOrg":"Digicel St.Lucia Ltd","confidence":85,"greynoise":null}],"hourly":{"2026-07-14-06":1}}

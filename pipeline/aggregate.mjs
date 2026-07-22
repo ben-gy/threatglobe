@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Ben Richardson — https://benrichardson.dev
+// Additional terms under AGPL-3.0 section 7(b) apply; see ADDITIONAL-TERMS.md.
 // ThreatGlobe aggregator. Reads raw hourly JSONs and produces site-ready summary files.
 import fs from 'node:fs';
 import path from 'node:path';

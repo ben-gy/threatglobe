@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Ben Richardson — https://benrichardson.dev
+// Additional terms under AGPL-3.0 section 7(b) apply; see ADDITIONAL-TERMS.md.
 // Minimal country metadata: ISO-2 → name, flag emoji, lat/lon centroid.
 // Used for sidebar display and as a fallback when globe country data is unavailable.
 

@@ -1,0 +1,1 @@
+{"country":"SX","outboundTotal":1,"inboundTotal":0,"topOutboundTargets":[{"country":"IT","count":1}],"topInboundSources":[],"categoryCountsOut":{"21":1},"categoryCountsIn":{},"topAsn":[{"name":"Coral Telecom N.V.","count":1}],"topSourceIps":[{"ip":"190.185.91.12","count":1,"asnOrg":"Coral Telecom N.V.","confidence":85,"greynoise":null}],"hourly":{"2026-07-22-23":1}}

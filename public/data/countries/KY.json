@@ -1,0 +1,1 @@
+{"country":"KY","outboundTotal":1,"inboundTotal":0,"topOutboundTargets":[{"country":"NL","count":1}],"topInboundSources":[],"categoryCountsOut":{"11":1},"categoryCountsIn":{},"topAsn":[{"name":"Infinity Broadband Ltd","count":1}],"topSourceIps":[{"ip":"23.188.0.234","count":1,"asnOrg":"Infinity Broadband Ltd","confidence":85,"greynoise":null}],"hourly":{"2026-10-14-09":1}}
